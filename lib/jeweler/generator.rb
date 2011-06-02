@@ -47,9 +47,9 @@ class Jeweler
 
     attr_accessor :target_dir, :user_name, :user_email, :summary, :homepage,
                   :description, :project_name, :github_username, :github_token,
-                  :repo, :should_create_remote_repo, 
+                  :repo, :should_create_remote_repo,
                   :testing_framework, :documentation_framework,
-                  :should_use_cucumber, :should_use_bundler,
+                  :should_use_cucumber, :should_use_bundler, :should_use_github,
                   :should_setup_rubyforge, :should_use_reek, :should_use_roodi,
                   :development_dependencies,
                   :options,
@@ -92,6 +92,9 @@ class Jeweler
       self.should_setup_rubyforge = options[:rubyforge]
       self.should_use_bundler     = options[:use_bundler]
 
+      self.should_use_github      = true
+      self.should_use_github      = options[:use_github] if options.has_key?(:use_github)
+
       development_dependencies << ["cucumber", ">= 0"] if should_use_cucumber
 
       # TODO make bundler optional?
@@ -108,17 +111,19 @@ class Jeweler
       
       self.git_remote      = options[:git_remote]
 
-      raise NoGitUserName unless self.user_name
-      raise NoGitUserEmail unless self.user_email
+      if self.should_use_github
+        raise NoGitUserName unless self.user_name
+        raise NoGitUserEmail unless self.user_email
 
-      extend GithubMixin
+        extend GithubMixin
+      end
     end
 
     def run
       create_files
-      create_version_control
+      create_version_control if self.should_use_github
       $stdout.puts "Jeweler has prepared your gem in #{target_dir}"
-      if should_create_remote_repo
+      if self.should_create_remote_repo
         create_and_push_repo
         $stdout.puts "Jeweler has pushed your repo to #{homepage}"
       end
@@ -174,7 +179,7 @@ class Jeweler
       end
 
 
-      output_template_in_target '.gitignore'
+      output_template_in_target '.gitignore' if should_use_github
       output_template_in_target 'Rakefile'
       output_template_in_target 'Gemfile' if should_use_bundler
       output_template_in_target 'LICENSE.txt'

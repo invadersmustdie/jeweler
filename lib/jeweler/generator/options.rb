@@ -10,6 +10,8 @@ class Jeweler
         self[:testing_framework]       = :shoulda
         self[:documentation_framework] = :rdoc
         self[:use_bundler]             = true
+        self[:use_github]              = true
+        self[:create_repo]             = false
 
         git_config =  if Pathname.new("~/.gitconfig").expand_path.exist?
                         Git.global_config
@@ -71,6 +73,10 @@ class Jeweler
 
           o.on('--[no-]bundler', 'use bundler for managing dependencies') do |v|
             self[:use_bundler] = v
+          end
+
+          o.on('--[no-]github', 'prepare project for github integration') do |v|
+            self[:use_github] = v
           end
 
           o.on('--cucumber', 'generate cucumber stories in addition to the other tests') do

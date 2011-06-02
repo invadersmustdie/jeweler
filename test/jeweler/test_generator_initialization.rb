@@ -161,4 +161,18 @@ class TestGeneratorInitialization < Test::Unit::TestCase
 
   end
 
+  context "disabling github integration" do
+    setup do
+      @generator = build_generator(:use_github => false)
+      stub_git_config
+    end
+
+    should "not set git_remote" do
+      assert_nil @generator.git_remote
+    end
+
+    should "not fail on getting git username" do
+      build_generator(:use_github => false, :github_username => nil)
+    end
+  end
 end
